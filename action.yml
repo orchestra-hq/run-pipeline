@@ -1,0 +1,23 @@
+name: "Orchestra Action"
+description: "Run a pipeline in Orchestra"
+inputs:
+  api_key:
+    description: "Orchestra API key. Found in the Orchestra UI"
+    required: true
+  pipeline_id:
+    description: "Orchestra pipeline ID"
+    required: true
+  poll_interval:
+    description: "Polling interval in seconds"
+    required: false
+    default: "10"
+outputs:
+  status:
+    description: "The final status of the pipeline run"
+  pipeline_name:
+    description: "The name of the pipeline"
+  pipeline_run_id:
+    description: "The ID of the pipeline run"
+runs:
+  using: "node20"
+  main: "./src/index.js"
