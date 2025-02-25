@@ -1,4 +1,4 @@
-name: "Orchestra Action"
+name: "Orchestra Run Pipeline"
 description: "Run a pipeline in Orchestra"
 inputs:
   api_key:

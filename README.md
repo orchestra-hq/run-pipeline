@@ -1,4 +1,4 @@
-# Orchestra GitHub Action
+# Orchestra Run Pipeline
 
 This action allows Orchestra users to run and monitor their Orchestra pipelines from GitHub Actions.
 
