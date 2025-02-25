@@ -21,3 +21,6 @@ outputs:
 runs:
   using: "node20"
   main: "./src/index.js"
+branding:
+  icon: 'play'
+  color: 'purple'
