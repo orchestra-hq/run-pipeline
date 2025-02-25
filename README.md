@@ -39,7 +39,7 @@ The ID of the pipeline run.
 ## Example usage
 
 ```yaml
-uses: orchestra/orchestra-action
+uses: orchestra-hq/run-pipeline@v1
 with:
   api_key: ${{ secrets.ORCHESTRA_API_KEY }}
   pipeline_id: "your-pipeline-id"
