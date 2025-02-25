@@ -5,6 +5,8 @@ const START_PIPELINE_ENDPT = (pipelineId) =>
   `https://app.getorchestra.io/engine/public/pipelines/${pipelineId}/start`;
 const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
   `https://app.getorchestra.io/engine/public/pipeline_runs/${pipelineRunId}/status`;
+const LINEAGE_APP_URL = (pipelineRunId) =>
+  `https://app.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -32,7 +34,8 @@ async function main() {
     
     
     if (!response.ok) {
-      throw new Error(`Failed to start pipeline: ${response.statusText}`);
+      core.setFailed(`Failed to start pipeline: ${response.statusText}`);
+      return
     }
     const responseData = await response.json();
     const pipelineRunId = responseData.pipelineRunId;
@@ -40,7 +43,7 @@ async function main() {
       `Pipeline '${pipelineId}' started with run ID '${pipelineRunId}'`
     );
     core.setOutput("pipeline_run_id", pipelineRunId);
-    core.info(`Starting polling...`);
+    core.info(`Check pipeline run status...`);
 
     while (true) {
       await sleep(parseInt(pollInterval) * 1000);
@@ -53,17 +56,34 @@ async function main() {
         }
       });
       if (!response.ok) {
-        throw new Error(`Failed to poll pipeline: ${response.statusText}`);
+        core.setFailed(`Failed to poll pipeline: ${response.statusText}`);
+        return
       }
       const responseData = await response.json();
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
       core.info(`Pipeline (${pipelineName}) status: ${status}`);
-      if (["SUCCEEDED", "FAILED", "CANCELLED"].includes(status)) {
-        core.info("Polling complete. Exiting.");
+
+      if (status === 'FAILED') {
+        core.setFailed(`Pipeline failed. See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
+        return
+      }
+
+      if (status === 'CANCELLED') {
+        core.setFailed(`Pipeline cancelled in the underlying platform. See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
+        return
+      }
+      
+      if (status === 'SUCCEEDED') {
+        core.info("Pipeline succeeded. Exiting.");
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
-        break;
+        return 
+      }
+
+      if (status === 'WARNING') {
+        core.warning(`Pipeline ended in warning state: See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`)
+        return
       }
     }
   } catch (err) {
