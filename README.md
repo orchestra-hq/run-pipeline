@@ -2,7 +2,7 @@
 
 This action allows Orchestra users to run and monitor their Orchestra pipelines from GitHub Actions.
 
-If the pipeline is backed by Orchestra, the latest published version will run. If it’s Git-backed, the pipeline YAML from the current branch and commit of the GitHub workflow will be used.
+If the pipeline is backed by Orchestra, the latest published version will run. If it’s Git-backed, the pipeline YAML from the current branch and commit of the GitHub workflow will be used. Additionally, the action will automatically pass the a run ID parameter to the pipeline to track previous pipeline runs were the user to re-run the CI/CD pipeline.
 
 ## Inputs
 
