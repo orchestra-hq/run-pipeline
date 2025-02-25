@@ -18,7 +18,6 @@ async function main() {
     const environment = core.getInput("environment");
 
     core.info(`Starting pipeline '${pipelineId}'...`);
-    const runAttempt = process.env.GITHUB_RUN_ATTEMPT || 1;
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
       method: "POST",
@@ -30,7 +29,7 @@ async function main() {
         branch: github.context.ref.replace(/^refs\/heads\//, ""),
         commit: github.context.sha,
         environment,
-        ciRunId: runAttempt > 1 ? github.context.runId : null,
+        ciRunId: github.context.runId,
       }),
     });
 
