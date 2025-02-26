@@ -32,7 +32,7 @@ async function main() {
         ciRunId: github.context.runId,
       }),
     });
-
+    core.info(`Called start pipeline with ciRunId: ${github.context.runId}`);
     if (!response.ok) {
       core.setFailed(`Failed to start pipeline: ${response.statusText}`);
       return;
