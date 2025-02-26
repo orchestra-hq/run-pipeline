@@ -16,7 +16,7 @@ async function main() {
     const pipelineId = core.getInput("pipeline_id", { required: true });
     const pollInterval = core.getInput("poll_interval");
     const environment = core.getInput("environment");
-    
+
     core.info(`Starting pipeline '${pipelineId}'...`);
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
@@ -28,14 +28,14 @@ async function main() {
       body: JSON.stringify({
         branch: github.context.ref.replace(/^refs\/heads\//, ""),
         commit: github.context.sha,
-        environment
+        environment,
+        ciRunId: github.context.runId,
       }),
     });
-    
-    
+
     if (!response.ok) {
       core.setFailed(`Failed to start pipeline: ${response.statusText}`);
-      return
+      return;
     }
     const responseData = await response.json();
     const pipelineRunId = responseData.pipelineRunId;
@@ -53,37 +53,49 @@ async function main() {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        }
+        },
       });
       if (!response.ok) {
         core.setFailed(`Failed to poll pipeline: ${response.statusText}`);
-        return
+        return;
       }
       const responseData = await response.json();
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
       core.info(`Pipeline (${pipelineName}) status: ${status}`);
 
-      if (status === 'FAILED') {
-        core.setFailed(`Pipeline failed. See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
-        return
+      if (status === "FAILED") {
+        core.setFailed(
+          `Pipeline failed. See '${LINEAGE_APP_URL(
+            pipelineRunId
+          )}' for details.`
+        );
+        return;
       }
 
-      if (status === 'CANCELLED') {
-        core.setFailed(`Pipeline cancelled in the underlying platform. See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
-        return
+      if (status === "CANCELLED") {
+        core.setFailed(
+          `Pipeline cancelled in the underlying platform. See '${LINEAGE_APP_URL(
+            pipelineRunId
+          )}' for details.`
+        );
+        return;
       }
-      
-      if (status === 'SUCCEEDED') {
+
+      if (status === "SUCCEEDED") {
         core.info("Pipeline succeeded. Exiting.");
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
-        return 
+        return;
       }
 
-      if (status === 'WARNING') {
-        core.warning(`Pipeline ended in warning state: See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`)
-        return
+      if (status === "WARNING") {
+        core.warning(
+          `Pipeline ended in warning state: See '${LINEAGE_APP_URL(
+            pipelineRunId
+          )}' for details.`
+        );
+        return;
       }
     }
   } catch (err) {
