@@ -11,6 +11,9 @@ inputs:
     description: "Polling interval in seconds"
     required: false
     default: "10"
+  environment:
+    description: "Orchestra environment to run the pipeline with"
+    required: false
 outputs:
   status:
     description: "The final status of the pipeline run"
