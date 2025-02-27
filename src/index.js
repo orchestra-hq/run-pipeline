@@ -29,7 +29,7 @@ async function main() {
         branch: github.context.ref.replace(/^refs\/heads\//, ""),
         commit: github.context.sha,
         environment,
-        ciRunId: str(github.context.runId),
+        ciRunId: github.context.runId.toString(),
       }),
     });
 
