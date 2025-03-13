@@ -2,9 +2,9 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 
 const START_PIPELINE_ENDPT = (pipelineId) =>
-  `https://app.getorchestra.io/engine/public/pipelines/${pipelineId}/start`;
+  `https://app.getorchestra.io/api/engine/public/pipelines/${pipelineId}/start`;
 const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
-  `https://app.getorchestra.io/engine/public/pipeline_runs/${pipelineRunId}/status`;
+  `https://app.getorchestra.io/api/engine/public/pipeline_runs/${pipelineRunId}/status`;
 const LINEAGE_APP_URL = (pipelineRunId) =>
   `https://app.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
 
