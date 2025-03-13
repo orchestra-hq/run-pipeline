@@ -20,7 +20,9 @@ async function main() {
       core.getInput("retry_from_failed").toLowerCase() === "true";
     const continueDownstreamRun =
       core.getInput("continue_downstream_run").toLowerCase() === "true";
-    const taskIds = core.getInput("task_ids").split(",");
+    const taskIds = core.getInput("task_ids")
+      ? core.getInput("task_ids").split(",")
+      : null;
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -36,7 +38,7 @@ async function main() {
         environment,
         ciRunId: github.context.runId.toString(),
         retryFromFailed,
-        taskIds: taskIds.join(","),
+        taskIds,
         continueDownstreamRun,
       }),
     });
