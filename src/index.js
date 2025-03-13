@@ -6,7 +6,7 @@ const START_PIPELINE_ENDPT = (pipelineId) =>
 const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
   `https://app.getorchestra.io/api/engine/public/pipeline_runs/${pipelineRunId}/status`;
 const LINEAGE_APP_URL = (pipelineRunId) =>
-  `https://app.getorchestra.io/api/pipeline-runs/${pipelineRunId}/lineage`;
+  `https://app.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
