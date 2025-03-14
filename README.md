@@ -24,11 +24,11 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 ### `task_ids`
 
-(Optional) If the user wants to run a subset of tasks in the pipeline, they can specify the IDs of the tasks to run. No task group ids are supported.
+(Optional) To run a subset of tasks in the pipeline, specify the task IDs separated by a comma. No task group ids are supported.
 
 ### `continue_downstream_run`
 
-(Optional) If the user wants to continue a downstream run after running specific task IDs just set this to true.
+(Optional) To continue running downstream tasks after specifying task IDs, set this to true.
 
 ## Outputs
 

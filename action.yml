@@ -14,6 +14,12 @@ inputs:
   environment:
     description: "Orchestra environment to run the pipeline with"
     required: false
+  task_ids:
+    description: "Orchestra task IDs to run"
+    required: false
+  continue_downstream_run:
+    description: "Continue downstream run boolean"
+    required: false
 outputs:
   status:
     description: "The final status of the pipeline run"
@@ -25,5 +31,5 @@ runs:
   using: "node20"
   main: "./src/index.js"
 branding:
-  icon: 'play'
-  color: 'purple'
+  icon: "play"
+  color: "purple"
