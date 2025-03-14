@@ -18,7 +18,7 @@ inputs:
     description: "Orchestra task IDs to run"
     required: false
   continue_downstream_run:
-    description: "Continue downstream run boolean"
+    description: "Continue running downstream tasks when specifying task_ids to run"
     required: false
 outputs:
   status:
