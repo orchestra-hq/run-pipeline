@@ -22,6 +22,14 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) The environment name or ID to run the pipeline in. If not specified, the default environment will be used
 
+### `task_ids`
+
+(Optional) To run a subset of tasks in the pipeline, specify the task IDs separated by a comma. No task group ids are supported.
+
+### `continue_downstream_run`
+
+(Optional) To continue running downstream tasks after specifying task IDs, set this to true.
+
 ## Outputs
 
 ### `status`
@@ -43,4 +51,6 @@ uses: orchestra-hq/run-pipeline@v1
 with:
   api_key: ${{ secrets.ORCHESTRA_API_KEY }}
   pipeline_id: "your-pipeline-id"
+  task_ids: "task-id-1,task-id-2"
+  continue_downstream_run: true
 ```

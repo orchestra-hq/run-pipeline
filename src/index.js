@@ -16,6 +16,13 @@ async function main() {
     const pipelineId = core.getInput("pipeline_id", { required: true });
     const pollInterval = core.getInput("poll_interval");
     const environment = core.getInput("environment");
+    const retryFromFailed =
+      core.getInput("retry_from_failed").toLowerCase() === "true";
+    const continueDownstreamRun =
+      core.getInput("continue_downstream_run").toLowerCase() === "true";
+    const taskIds = core.getInput("task_ids")
+      ? core.getInput("task_ids").split(",")
+      : null;
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -30,6 +37,9 @@ async function main() {
         commit: github.context.sha,
         environment,
         ciRunId: github.context.runId.toString(),
+        retryFromFailed,
+        taskIds,
+        continueDownstreamRun,
       }),
     });
 
