@@ -26,7 +26,7 @@ async function main() {
       ? core.getInput("task_ids").split(",")
       : null;
 
-    core.info(`Starting pipeline '${pipelineId}'...`);
+    core.info(`[${orchestraEnv}] Starting pipeline '${pipelineId}'...`);
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
       method: "POST",
