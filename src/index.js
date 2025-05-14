@@ -1,12 +1,14 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
+const orchestraEnv = process.env.ORCHESTRA_ENV || "app";
+
 const START_PIPELINE_ENDPT = (pipelineId) =>
-  `https://app.getorchestra.io/api/engine/public/pipelines/${pipelineId}/start`;
+  `https://${orchestraEnv}.getorchestra.io/api/engine/public/pipelines/${pipelineId}/start`;
 const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
-  `https://app.getorchestra.io/api/engine/public/pipeline_runs/${pipelineRunId}/status`;
+  `https://${orchestraEnv}.getorchestra.io/api/engine/public/pipeline_runs/${pipelineRunId}/status`;
 const LINEAGE_APP_URL = (pipelineRunId) =>
-  `https://app.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
+  `https://${orchestraEnv}.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -24,7 +26,7 @@ async function main() {
       ? core.getInput("task_ids").split(",")
       : null;
 
-    core.info(`Starting pipeline '${pipelineId}'...`);
+    core.info(`[${orchestraEnv}] Starting pipeline '${pipelineId}'...`);
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
       method: "POST",
