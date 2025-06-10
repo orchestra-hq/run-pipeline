@@ -30,6 +30,10 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) To continue running downstream tasks after specifying task IDs, set this to true.
 
+### `run_inputs`
+
+(Optional) A JSON-formatted string containing key-value pairs of pipeline run inputs. These values override any default inputs defined in the pipeline and are required if the pipeline has required inputs with no defaults.
+
 ## Outputs
 
 ### `status`
