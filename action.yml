@@ -20,6 +20,9 @@ inputs:
   continue_downstream_run:
     description: "Continue running downstream tasks when specifying task_ids to run"
     required: false
+  run_inputs:
+    description: "A JSON-formatted string containing key-value pairs of pipeline run inputs."
+    required: false
 outputs:
   status:
     description: "The final status of the pipeline run"

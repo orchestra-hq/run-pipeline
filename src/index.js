@@ -12,6 +12,18 @@ const LINEAGE_APP_URL = (pipelineRunId) =>
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const parseJson = (input) => {
+  if (!input?.trim()) {
+    return 
+  }
+  
+  try {
+    return JSON.parse(input);
+  } catch (err) {
+    throw new Error(`Failed to parse input as JSON: ${err.message}`);
+  }
+}
+
 async function main() {
   try {
     const token = core.getInput("api_key", { required: true });
@@ -25,6 +37,7 @@ async function main() {
     const taskIds = core.getInput("task_ids")
       ? core.getInput("task_ids").split(",")
       : null;
+    const runInputs = parseJson(core.getInput("run_inputs"))
 
     core.info(`[${orchestraEnv}] Starting pipeline '${pipelineId}'...`);
 
@@ -42,6 +55,7 @@ async function main() {
         retryFromFailed,
         taskIds,
         continueDownstreamRun,
+        runInputs
       }),
     });
 
