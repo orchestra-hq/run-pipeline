@@ -73,13 +73,15 @@ async function main() {
             errorMessage = responseData?.detail ?? responseData?.message ?? responseData?.error ?? errorMessage;
           }
       } catch (err) {}
-      core.setFailed(
-        `Failed to start pipeline: ${response.statusText}\nURL: ${
+      
+      core.error(
+        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${
           response.url
         }\nMessage: ${
           errorMessage
         }`
       );
+      core.setFailed("Pipeline start failed"); 
       return;
     }
     const responseData = await response.json();
