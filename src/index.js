@@ -77,7 +77,7 @@ async function main() {
       core.error(
         `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${
           response.url
-        }\nMessage: ${
+        }\Error: ${
           errorMessage
         }`
       );
