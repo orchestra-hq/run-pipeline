@@ -14,15 +14,15 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const parseJson = (input) => {
   if (!input?.trim()) {
-    return 
+    return;
   }
-  
+
   try {
     return JSON.parse(input);
   } catch (err) {
     throw new Error(`Failed to parse input as JSON: ${err.message}`);
   }
-}
+};
 
 async function main() {
   try {
@@ -37,7 +37,7 @@ async function main() {
     const taskIds = core.getInput("task_ids")
       ? core.getInput("task_ids").split(",")
       : null;
-    const runInputs = parseJson(core.getInput("run_inputs"))
+    const runInputs = parseJson(core.getInput("run_inputs"));
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -55,21 +55,31 @@ async function main() {
         retryFromFailed,
         taskIds,
         continueDownstreamRun,
-        runInputs
+        runInputs,
       }),
     });
 
     if (!response.ok) {
-      let errorMessage  = ''
+      let errorMessage = await response.text();
       try {
-        errorMessage = response.headers.get('Content-Type')?.includes('application/json') ? await response.json() : await response.text()
-        errorMessage = responseData instanceof Object ? responseData?.detail ??
-          responseData?.message ??
-          responseData?.error ?? JSON.stringify(responseData) : responseData
-        errorMessage = errorMessage instanceof Object ? JSON.stringify(errorMessage) : errorMessage
-      } catch (err) {        
-      }
-      core.setFailed(`Failed to start pipeline: ${response.statusText}\nURL: ${response.url}\nMessage: ${errorMessage}`);
+          const responseData = JSON.parse(errorMessage);
+          if (responseData?.detail instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.detail);
+          } else if (responseData?.message instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.message);
+          } else if (responseData?.error instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.error);
+          } else {
+            errorMessage = responseData?.detail ?? responseData?.message ?? responseData?.error ?? errorMessage;
+          }
+      } catch (err) {}
+      core.setFailed(
+        `Failed to start pipeline: ${response.statusText}\nURL: ${
+          response.url
+        }\nMessage: ${
+          errorMessage
+        }`
+      );
       return;
     }
     const responseData = await response.json();
@@ -120,9 +130,7 @@ async function main() {
 
       if (status === "SUCCEEDED") {
         core.info(`Pipeline '${pipelineName}' succeeded.`);
-        core.info(`See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`);
+        core.info(`See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
         return;
@@ -136,7 +144,6 @@ async function main() {
         );
         return;
       }
-
     }
   } catch (err) {
     core.setFailed(`Action failed: ${err.message}`);
