@@ -89,6 +89,7 @@ async function main() {
     core.info(
       `Pipeline '${pipelineId}' started with run ID '${pipelineRunId}'`
     );
+    core.info(`See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
     core.setOutput("pipeline_run_id", pipelineRunId);
     core.info(`Check pipeline run status...`);
 
@@ -114,25 +115,20 @@ async function main() {
 
       if (status === "FAILED") {
         core.setFailed(
-          `Pipeline '${pipelineName}' failed. See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}' failed`
         );
         return;
       }
 
       if (status === "CANCELLED") {
         core.setFailed(
-          `Pipeline '${pipelineName}'cancelled in the underlying platform. See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}'cancelled in the underlying platform.`
         );
         return;
       }
 
       if (status === "SUCCEEDED") {
         core.info(`Pipeline '${pipelineName}' succeeded.`);
-        core.info(`See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
         return;
@@ -140,9 +136,7 @@ async function main() {
 
       if (status === "WARNING") {
         core.warning(
-          `Pipeline '${pipelineName}' ended in warning state: See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}' ended in warning state.`
         );
         return;
       }
