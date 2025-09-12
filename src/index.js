@@ -97,11 +97,10 @@ async function main() {
       const responseData = await response.json();
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
-      core.info(`Pipeline (${pipelineName}) status: ${status}`);
 
       if (status === "FAILED") {
         core.setFailed(
-          `Pipeline failed. See '${LINEAGE_APP_URL(
+          `Pipeline '${pipelineName}' failed. See '${LINEAGE_APP_URL(
             pipelineRunId
           )}' for details.`
         );
@@ -110,7 +109,7 @@ async function main() {
 
       if (status === "CANCELLED") {
         core.setFailed(
-          `Pipeline cancelled in the underlying platform. See '${LINEAGE_APP_URL(
+          `Pipeline '${pipelineName}'cancelled in the underlying platform. See '${LINEAGE_APP_URL(
             pipelineRunId
           )}' for details.`
         );
@@ -118,9 +117,9 @@ async function main() {
       }
 
       if (status === "SUCCEEDED") {
-        core.info(`Pipeline succeeded. See '${LINEAGE_APP_URL(
+        core.info(`Pipeline '${pipelineName}' succeeded. See '${LINEAGE_APP_URL(
             pipelineRunId
-          )}' for details. Exiting.`);
+          )}' for details`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
         return;
@@ -128,12 +127,14 @@ async function main() {
 
       if (status === "WARNING") {
         core.warning(
-          `Pipeline ended in warning state: See '${LINEAGE_APP_URL(
+          `Pipeline '${pipelineName}' ended in warning state: See '${LINEAGE_APP_URL(
             pipelineRunId
           )}' for details.`
         );
         return;
       }
+
+      core.info(`Pipeline status: ${status}`);
     }
   } catch (err) {
     core.setFailed(`Action failed: ${err.message}`);
