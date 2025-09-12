@@ -14,15 +14,15 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const parseJson = (input) => {
   if (!input?.trim()) {
-    return 
+    return;
   }
-  
+
   try {
     return JSON.parse(input);
   } catch (err) {
     throw new Error(`Failed to parse input as JSON: ${err.message}`);
   }
-}
+};
 
 async function main() {
   try {
@@ -37,9 +37,9 @@ async function main() {
     const taskIds = core.getInput("task_ids")
       ? core.getInput("task_ids").split(",")
       : null;
-    const runInputs = parseJson(core.getInput("run_inputs"))
+    const runInputs = parseJson(core.getInput("run_inputs"));
 
-    core.info(`[${orchestraEnv}] Starting pipeline '${pipelineId}'...`);
+    core.info(`Starting pipeline '${pipelineId}'...`);
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
       method: "POST",
@@ -55,12 +55,33 @@ async function main() {
         retryFromFailed,
         taskIds,
         continueDownstreamRun,
-        runInputs
+        runInputs,
       }),
     });
 
     if (!response.ok) {
-      core.setFailed(`Failed to start pipeline: ${response.statusText}`);
+      let errorMessage = await response.text();
+      try {
+          const responseData = JSON.parse(errorMessage);
+          if (responseData?.detail instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.detail);
+          } else if (responseData?.message instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.message);
+          } else if (responseData?.error instanceof Object) {
+            errorMessage = JSON.stringify(responseData?.error);
+          } else {
+            errorMessage = responseData?.detail ?? responseData?.message ?? responseData?.error ?? errorMessage;
+          }
+      } catch (err) {}
+      
+      core.error(
+        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${
+          response.url
+        }\Error: ${
+          errorMessage
+        }`
+      );
+      core.setFailed("Pipeline start failed"); 
       return;
     }
     const responseData = await response.json();
@@ -68,6 +89,7 @@ async function main() {
     core.info(
       `Pipeline '${pipelineId}' started with run ID '${pipelineRunId}'`
     );
+    core.info(`See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
     core.setOutput("pipeline_run_id", pipelineRunId);
     core.info(`Check pipeline run status...`);
 
@@ -88,28 +110,25 @@ async function main() {
       const responseData = await response.json();
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
-      core.info(`Pipeline (${pipelineName}) status: ${status}`);
+
+      core.info(`Pipeline status: ${status}`);
 
       if (status === "FAILED") {
         core.setFailed(
-          `Pipeline failed. See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}' failed`
         );
         return;
       }
 
       if (status === "CANCELLED") {
         core.setFailed(
-          `Pipeline cancelled in the underlying platform. See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}'cancelled in the underlying platform.`
         );
         return;
       }
 
       if (status === "SUCCEEDED") {
-        core.info("Pipeline succeeded. Exiting.");
+        core.info(`Pipeline '${pipelineName}' succeeded.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
         return;
@@ -117,9 +136,7 @@ async function main() {
 
       if (status === "WARNING") {
         core.warning(
-          `Pipeline ended in warning state: See '${LINEAGE_APP_URL(
-            pipelineRunId
-          )}' for details.`
+          `Pipeline '${pipelineName}' ended in warning state.`
         );
         return;
       }
