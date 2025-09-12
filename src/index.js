@@ -69,7 +69,7 @@ async function main() {
           responseData?.error ?? JSON.stringify(responseData) : responseData
       } catch (err) {        
       }
-      core.setFailed(`Failed to start pipeline:\nStatus: ${response.statusText}\nURL: ${response.url}\Message: ${errorMessage}`);
+      core.setFailed(`Failed to start pipeline: ${response.statusText}\nURL: ${response.url}\nMessage: ${errorMessage}`);
       return;
     }
     const responseData = await response.json();
