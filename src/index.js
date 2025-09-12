@@ -119,9 +119,10 @@ async function main() {
       }
 
       if (status === "SUCCEEDED") {
-        core.info(`Pipeline '${pipelineName}' succeeded. See '${LINEAGE_APP_URL(
+        core.info(`Pipeline '${pipelineName}' succeeded.`);
+        core.info(` See '${LINEAGE_APP_URL(
             pipelineRunId
-          )}' for details`);
+          )}' for details.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
         return;
