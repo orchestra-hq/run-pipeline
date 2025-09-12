@@ -60,7 +60,16 @@ async function main() {
     });
 
     if (!response.ok) {
-      core.setFailed(`Failed to start pipeline: ${response.statusText}`);
+      let errorMessage  = ''
+      try {
+        errorMessage = response.headers.get('Content-Type')?.includes('application/json') ? await response.json() : await response.text()
+        core.debug(errorMessage)
+        errorMessage = responseData instanceof Object ? responseData?.detail ??
+          responseData?.message ??
+          responseData?.error ?? JSON.stringify(responseData) : responseData
+      } catch (err) {        
+      }
+      core.setFailed(`Failed to start pipeline:\nStatus: ${response.statusText}\nURL: ${response.url}\Message: ${errorMessage}`);
       return;
     }
     const responseData = await response.json();
