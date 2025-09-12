@@ -63,10 +63,10 @@ async function main() {
       let errorMessage  = ''
       try {
         errorMessage = response.headers.get('Content-Type')?.includes('application/json') ? await response.json() : await response.text()
-        core.debug(errorMessage)
         errorMessage = responseData instanceof Object ? responseData?.detail ??
           responseData?.message ??
           responseData?.error ?? JSON.stringify(responseData) : responseData
+        errorMessage = errorMessage instanceof Object ? JSON.stringify(errorMessage) : errorMessage
       } catch (err) {        
       }
       core.setFailed(`Failed to start pipeline: ${response.statusText}\nURL: ${response.url}\nMessage: ${errorMessage}`);
@@ -120,7 +120,7 @@ async function main() {
 
       if (status === "SUCCEEDED") {
         core.info(`Pipeline '${pipelineName}' succeeded.`);
-        core.info(` See '${LINEAGE_APP_URL(
+        core.info(`See '${LINEAGE_APP_URL(
             pipelineRunId
           )}' for details.`);
         core.setOutput("status", status);
