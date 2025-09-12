@@ -39,7 +39,7 @@ async function main() {
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"))
 
-    core.info(`[${orchestraEnv}] Starting pipeline '${pipelineId}'...`);
+    core.info(`Starting pipeline '${pipelineId}'...`);
 
     const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
       method: "POST",
@@ -98,6 +98,8 @@ async function main() {
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
 
+      core.info(`Pipeline status: ${status}`);
+
       if (status === "FAILED") {
         core.setFailed(
           `Pipeline '${pipelineName}' failed. See '${LINEAGE_APP_URL(
@@ -134,7 +136,6 @@ async function main() {
         return;
       }
 
-      core.info(`Pipeline status: ${status}`);
     }
   } catch (err) {
     core.setFailed(`Action failed: ${err.message}`);
