@@ -7,6 +7,9 @@ inputs:
   pipeline_id:
     description: "Orchestra pipeline ID"
     required: true
+  branch:
+    description: "Branch to run the pipeline on"
+    required: false
   poll_interval:
     description: "Polling interval in seconds"
     required: false
