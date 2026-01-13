@@ -38,6 +38,9 @@ async function main() {
       ? core.getInput("task_ids").split(",")
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"));
+    const branch =
+      core.getInput("branch") ||
+      github.context.ref.replace(/^refs\/heads\//, "");
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -48,7 +51,7 @@ async function main() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        branch: github.context.ref.replace(/^refs\/heads\//, ""),
+        branch,
         commit: github.context.sha,
         environment,
         ciRunId: github.context.runId.toString(),
@@ -62,26 +65,26 @@ async function main() {
     if (!response.ok) {
       let errorMessage = await response.text();
       try {
-          const responseData = JSON.parse(errorMessage);
-          if (responseData?.detail instanceof Object) {
-            errorMessage = JSON.stringify(responseData?.detail);
-          } else if (responseData?.message instanceof Object) {
-            errorMessage = JSON.stringify(responseData?.message);
-          } else if (responseData?.error instanceof Object) {
-            errorMessage = JSON.stringify(responseData?.error);
-          } else {
-            errorMessage = responseData?.detail ?? responseData?.message ?? responseData?.error ?? errorMessage;
-          }
+        const responseData = JSON.parse(errorMessage);
+        if (responseData?.detail instanceof Object) {
+          errorMessage = JSON.stringify(responseData?.detail);
+        } else if (responseData?.message instanceof Object) {
+          errorMessage = JSON.stringify(responseData?.message);
+        } else if (responseData?.error instanceof Object) {
+          errorMessage = JSON.stringify(responseData?.error);
+        } else {
+          errorMessage =
+            responseData?.detail ??
+            responseData?.message ??
+            responseData?.error ??
+            errorMessage;
+        }
       } catch (err) {}
-      
+
       core.error(
-        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${
-          response.url
-        }\Error: ${
-          errorMessage
-        }`
+        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${response.url}\Error: ${errorMessage}`
       );
-      core.setFailed("Pipeline start failed"); 
+      core.setFailed("Pipeline start failed");
       return;
     }
     const responseData = await response.json();
@@ -114,9 +117,7 @@ async function main() {
       core.info(`Pipeline status: ${status}`);
 
       if (status === "FAILED") {
-        core.setFailed(
-          `Pipeline '${pipelineName}' failed`
-        );
+        core.setFailed(`Pipeline '${pipelineName}' failed`);
         return;
       }
 
@@ -135,9 +136,7 @@ async function main() {
       }
 
       if (status === "WARNING") {
-        core.warning(
-          `Pipeline '${pipelineName}' ended in warning state.`
-        );
+        core.warning(`Pipeline '${pipelineName}' ended in warning state.`);
         return;
       }
     }

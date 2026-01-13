@@ -14,6 +14,10 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 **Required** The ID of the pipeline you want to run.
 
+### `branch`
+
+(Optional) The branch to run the pipeline on. If not specified, the current branch will be used.
+
 ### `poll_interval`
 
 (Optional) The interval in seconds at which to poll the pipeline status. Default is 10 seconds.
