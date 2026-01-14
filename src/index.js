@@ -38,9 +38,7 @@ async function main() {
       ? core.getInput("task_ids").split(",")
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"));
-    const branch =
-      core.getInput("branch") ||
-      github.context.ref.replace(/^refs\/heads\//, "");
+    const branchInput = core.getInput("branch");
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -51,8 +49,8 @@ async function main() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        branch,
-        commit: github.context.sha,
+        branch: branchInput || github.context.ref.replace(/^refs\/heads\//, ""),
+        commit: branchInput ? null : github.context.sha,
         environment,
         ciRunId: github.context.runId.toString(),
         retryFromFailed,
