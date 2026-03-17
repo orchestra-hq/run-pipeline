@@ -118,11 +118,11 @@ async function main() {
 
       core.info(`Pipeline status: ${status}`);
 
-      const terminalStates = { SUCCEEDED: "succeeded.", FAILED: "failed.", WARNING: "ended in warning state.", CANCELLED: "cancelled in the underlying platform." };
-      if (status in terminalStates) {
+      const pipelineStates = { SUCCEEDED: "succeeded.", FAILED: "failed.", WARNING: "ended in warning state.", CANCELLED: "cancelled in the underlying platform." };
+      if (status in pipelineStates) {
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
-        const message = `Pipeline '${pipelineName}' ${terminalStates[status]}`;
+        const message = `Pipeline '${pipelineName}' ${pipelineStates[status]}`;
         if (status === "SUCCEEDED") {
           core.info(message);
         } else if (status === "FAILED" && ignoreFailures) {
