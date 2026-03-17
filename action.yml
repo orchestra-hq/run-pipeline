@@ -30,10 +30,6 @@ inputs:
     description: "If true, a FAILED pipeline state will not fail the GitHub Action step"
     required: false
     default: "false"
-  ignore_warnings:
-    description: "If true, a WARNING pipeline state will not fail the GitHub Action step"
-    required: false
-    default: "false"
 outputs:
   status:
     description: "The final status of the pipeline run"

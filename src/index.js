@@ -41,8 +41,6 @@ async function main() {
     const branchInput = core.getInput("branch");
     const ignoreFailures =
       core.getInput("ignore_failures").toLowerCase() === "true";
-    const ignoreWarnings =
-      core.getInput("ignore_warnings").toLowerCase() === "true";
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -125,9 +123,9 @@ async function main() {
         const message = `Pipeline '${pipelineName}' ${pipelineStates[status]}`;
         if (status === "SUCCEEDED") {
           core.info(message);
+        } else if (status === "WARNING") {
+          core.warning(message);
         } else if (status === "FAILED" && ignoreFailures) {
-          core.warning(`${message} (ignored)`);
-        } else if (status === "WARNING" && ignoreWarnings) {
           core.warning(`${message} (ignored)`);
         } else {
           core.setFailed(message);

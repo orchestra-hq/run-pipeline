@@ -42,10 +42,6 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) If `true`, a FAILED pipeline state will not fail the GitHub Action step. Default is `false`.
 
-### `ignore_warnings`
-
-(Optional) If `true`, a WARNING pipeline state will not fail the GitHub Action step. Default is `false`.
-
 ## Outputs
 
 ### `status`
