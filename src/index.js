@@ -39,6 +39,8 @@ async function main() {
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"));
     const branchInput = core.getInput("branch");
+    const ignoreFailures =
+      core.getInput("ignore_failures").toLowerCase() === "true";
 
     core.info(`Starting pipeline '${pipelineId}'...`);
 
@@ -114,27 +116,18 @@ async function main() {
 
       core.info(`Pipeline status: ${status}`);
 
-      if (status === "FAILED") {
-        core.setFailed(`Pipeline '${pipelineName}' failed`);
-        return;
-      }
-
-      if (status === "CANCELLED") {
-        core.setFailed(
-          `Pipeline '${pipelineName}'cancelled in the underlying platform.`
-        );
-        return;
-      }
-
-      if (status === "SUCCEEDED") {
-        core.info(`Pipeline '${pipelineName}' succeeded.`);
+      const terminalStates = { SUCCEEDED: "succeeded.", FAILED: "failed.", WARNING: "ended in warning state.", CANCELLED: "cancelled in the underlying platform." };
+      if (status in terminalStates) {
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
-        return;
-      }
-
-      if (status === "WARNING") {
-        core.warning(`Pipeline '${pipelineName}' ended in warning state.`);
+        const message = `Pipeline '${pipelineName}' ${terminalStates[status]}`;
+        if (status === "SUCCEEDED") {
+          core.info(message);
+        } else if (ignoreFailures && (status === "FAILED" || status === "WARNING")) {
+          core.warning(`${message} (ignored)`);
+        } else {
+          core.setFailed(message);
+        }
         return;
       }
     }

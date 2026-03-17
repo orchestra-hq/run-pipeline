@@ -26,6 +26,10 @@ inputs:
   run_inputs:
     description: "A JSON-formatted string containing key-value pairs of pipeline run inputs."
     required: false
+  ignore_failures:
+    description: "If true, FAILED and WARNING pipeline states will not fail the GitHub Action step"
+    required: false
+    default: "false"
 outputs:
   status:
     description: "The final status of the pipeline run"
