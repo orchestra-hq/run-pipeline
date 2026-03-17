@@ -38,6 +38,10 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) A JSON-formatted string containing key-value pairs of pipeline run inputs. These values override any default inputs defined in the pipeline and are required if the pipeline has required inputs with no defaults.
 
+### `ignore_failures`
+
+(Optional) If `true`, FAILED and WARNING pipeline states will not fail the GitHub Action step. Default is `false`.
+
 ## Outputs
 
 ### `status`
