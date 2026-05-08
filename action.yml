@@ -34,7 +34,7 @@ outputs:
   pipeline_run_id:
     description: "The ID of the pipeline run"
 runs:
-  using: "node20"
+  using: "node24"
   main: "./src/index.js"
 branding:
   icon: "play"
