@@ -135,6 +135,17 @@ async function main() {
 
       if (status === "WARNING") {
         core.warning(`Pipeline '${pipelineName}' ended in warning state.`);
+        core.setOutput("status", status);
+        core.setOutput("pipeline_name", pipelineName);
+        return;
+      }
+
+      if (status === "SKIPPED") {
+        core.warning(
+          `Pipeline '${pipelineName}' run was skipped, likely because the pipeline's concurrency limit was reached.`
+        );
+        core.setOutput("status", status);
+        core.setOutput("pipeline_name", pipelineName);
         return;
       }
     }
