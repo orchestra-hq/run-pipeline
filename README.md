@@ -42,7 +42,7 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 ### `status`
 
-The final pipeline run status. One of SUCCEEDED, WARNING, FAILED or CANCELLED.
+The final pipeline run status. One of SUCCEEDED, WARNING, FAILED, CANCELLED or SKIPPED (the pipeline run was skipped, e.g. because the pipeline's concurrency limit was reached).
 
 ### `pipeline_name`
 
