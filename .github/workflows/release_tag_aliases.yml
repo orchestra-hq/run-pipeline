@@ -1,0 +1,45 @@
+name: Update release tag aliases
+run-name: 🏷️ Point v<major> and v<major>.<minor> at ${{ github.event.release.tag_name || inputs.tag }}
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to move the aliases onto
+        required: true
+permissions:
+  contents: write
+jobs:
+  move-aliases:
+    name: Move major and minor aliases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move aliases onto the release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::'$TAG' is not a vMAJOR.MINOR.PATCH tag, refusing to move aliases"
+            exit 1
+          fi
+
+          major="v${BASH_REMATCH[1]}"
+          minor="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          sha="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)"
+
+          for alias in "$major" "$minor"; do
+            if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$alias" >/dev/null 2>&1; then
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$alias" \
+                -f sha="$sha" -F force=true >/dev/null
+              echo "Moved $alias to $sha"
+            else
+              gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                -f ref="refs/tags/$alias" -f sha="$sha" >/dev/null
+              echo "Created $alias at $sha"
+            fi
+          done
