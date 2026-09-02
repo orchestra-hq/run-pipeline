@@ -13,7 +13,7 @@ permissions:
 jobs:
   move-aliases:
     name: Move major and minor aliases
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404-arm
     steps:
       - name: Move aliases onto the release tag
         env:
