@@ -1,0 +1,19 @@
+.github/workflows/release_tag_aliases.yml
+  s_50be99252da12d::t_7d392376edd890 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1a442fa0169b6979ddfbe213fef0a660b69d255b",
+  "prompts": {},
+  "sessions": {
+    "s_50be99252da12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be5b105a-aabc-4319-a6a3-fd2fa947ad7a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Jeroen Rijks <jeroen@getorchestra.io>"
+    }
+  }
+}
