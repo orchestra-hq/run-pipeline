@@ -6,6 +6,8 @@ const START_PIPELINE_ENDPT = (pipelineId) =>
   `${API_BASE_URL}/pipelines/${pipelineId}/start`;
 const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
   `${API_BASE_URL}/pipeline_runs/${pipelineRunId}/status`;
+const CANCEL_PIPELINE_RUN_ENDPT = (pipelineRunId) =>
+  `${API_BASE_URL}/pipeline_runs/${pipelineRunId}/cancel`;
 const LINEAGE_APP_URL = (pipelineRunId) =>
   `https://${orchestraEnv}.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
 
@@ -34,6 +36,7 @@ const readErrorMessage = async (response) => {
 module.exports = {
   START_PIPELINE_ENDPT,
   PIPELINE_RUN_ENDPT,
+  CANCEL_PIPELINE_RUN_ENDPT,
   LINEAGE_APP_URL,
   readErrorMessage,
 };

@@ -42,6 +42,10 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) A JSON-formatted string containing key-value pairs of pipeline run inputs. These values override any default inputs defined in the pipeline and are required if the pipeline has required inputs with no defaults.
 
+### `cancel_on_exit`
+
+(Optional) Whether to cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status. Default is true. See [Cancellation](#cancellation).
+
 ## Outputs
 
 ### `status`
@@ -55,6 +59,33 @@ The name of the pipeline.
 ### `pipeline_run_id`
 
 The ID of the pipeline run.
+
+## Cancellation
+
+By default, if the action stops watching a pipeline run before that run reaches a
+terminal status, it asks Orchestra to cancel the run. This stops a cancelled GitHub
+job from leaving an orphaned pipeline run behind, which would otherwise keep
+consuming a pipeline concurrency slot and cause later runs to be `SKIPPED`.
+
+This happens when:
+
+- the GitHub workflow or job is cancelled, or hits its timeout
+- the action repeatedly fails to poll the run status, or hits a permanent error such as an invalid API key
+
+Cancellation is best-effort. The action requests the cancellation and exits without
+waiting for it to complete, so the run moves to `CANCELLING` and Orchestra confirms
+cancellation with any underlying platforms in its own time. If a run gets stuck in
+`CANCELLING`, force cancel it from the Orchestra UI.
+
+To leave runs going when the GitHub job stops, set `cancel_on_exit: false`:
+
+```yaml
+uses: orchestra-hq/run-pipeline@v1
+with:
+  api_key: ${{ secrets.ORCHESTRA_API_KEY }}
+  pipeline_id: "your-pipeline-id"
+  cancel_on_exit: false
+```
 
 ## Example usage
 
