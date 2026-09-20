@@ -1,14 +1,12 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
-const orchestraEnv = process.env.ORCHESTRA_ENV || "app";
-
-const START_PIPELINE_ENDPT = (pipelineId) =>
-  `https://${orchestraEnv}.getorchestra.io/api/engine/public/pipelines/${pipelineId}/start`;
-const PIPELINE_RUN_ENDPT = (pipelineRunId) =>
-  `https://${orchestraEnv}.getorchestra.io/api/engine/public/pipeline_runs/${pipelineRunId}/status`;
-const LINEAGE_APP_URL = (pipelineRunId) =>
-  `https://${orchestraEnv}.getorchestra.io/pipeline-runs/${pipelineRunId}/lineage`;
+const {
+  START_PIPELINE_ENDPT,
+  PIPELINE_RUN_ENDPT,
+  LINEAGE_APP_URL,
+  readErrorMessage,
+} = require("./api");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -61,26 +59,10 @@ async function main() {
     });
 
     if (!response.ok) {
-      let errorMessage = await response.text();
-      try {
-        const responseData = JSON.parse(errorMessage);
-        if (responseData?.detail instanceof Object) {
-          errorMessage = JSON.stringify(responseData?.detail);
-        } else if (responseData?.message instanceof Object) {
-          errorMessage = JSON.stringify(responseData?.message);
-        } else if (responseData?.error instanceof Object) {
-          errorMessage = JSON.stringify(responseData?.error);
-        } else {
-          errorMessage =
-            responseData?.detail ??
-            responseData?.message ??
-            responseData?.error ??
-            errorMessage;
-        }
-      } catch (err) {}
+      const errorMessage = await readErrorMessage(response);
 
       core.error(
-        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${response.url}\Error: ${errorMessage}`
+        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${response.url}\nError: ${errorMessage}`
       );
       core.setFailed("Pipeline start failed");
       return;

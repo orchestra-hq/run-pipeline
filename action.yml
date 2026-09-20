@@ -23,6 +23,9 @@ inputs:
   continue_downstream_run:
     description: "Continue running downstream tasks when specifying task_ids to run"
     required: false
+  retry_from_failed:
+    description: "Retry the pipeline run from the failed tasks rather than re-running every task"
+    required: false
   run_inputs:
     description: "A JSON-formatted string containing key-value pairs of pipeline run inputs."
     required: false
