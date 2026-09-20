@@ -8,7 +8,18 @@ const {
   readErrorMessage,
 } = require("./api");
 
+// A status poll can fail for reasons that clear on their own, so retry a few
+// times with exponential backoff before giving up on the run.
+const MAX_POLL_ATTEMPTS = 3;
+// The backoff the final retry reaches, so the wait stays tied to the attempt
+// count rather than a separate magic number.
+const MAX_POLL_BACKOFF_MS = 2 ** (MAX_POLL_ATTEMPTS - 2) * 1000;
+const RETRYABLE_POLL_STATUSES = new Set([408, 429]);
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRetryablePollStatus = (status) =>
+  RETRYABLE_POLL_STATUSES.has(status) || status >= 500;
 
 const parseJson = (input) => {
   if (!input?.trim()) {
@@ -21,6 +32,54 @@ const parseJson = (input) => {
     throw new Error(`Failed to parse input as JSON: ${err.message}`);
   }
 };
+
+async function fetchRunStatus(pipelineRunId, token) {
+  for (let attempt = 1; ; attempt++) {
+    let failure;
+
+    try {
+      const response = await fetch(PIPELINE_RUN_ENDPT(pipelineRunId), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      failure = {
+        message: `HTTP ${response.status} ${
+          response.statusText
+        }: ${await readErrorMessage(response)}`,
+        retryable: isRetryablePollStatus(response.status),
+      };
+    } catch (err) {
+      // Network-level failures are always worth another attempt.
+      failure = { message: err.message, retryable: true };
+    }
+
+    if (!failure.retryable) {
+      throw new Error(`Failed to poll pipeline run: ${failure.message}`);
+    }
+
+    if (attempt >= MAX_POLL_ATTEMPTS) {
+      throw new Error(
+        `Failed to poll pipeline run after ${attempt} attempts: ${failure.message}`
+      );
+    }
+
+    const backoffMs = Math.min(2 ** (attempt - 1) * 1000, MAX_POLL_BACKOFF_MS);
+    core.warning(
+      `Failed to poll pipeline run (attempt ${attempt} of ${MAX_POLL_ATTEMPTS}): ${
+        failure.message
+      }. Retrying in ${backoffMs / 1000}s...`
+    );
+    await sleep(backoffMs);
+  }
+}
 
 async function main() {
   try {
@@ -79,18 +138,14 @@ async function main() {
     while (true) {
       await sleep(parseInt(pollInterval) * 1000);
 
-      const response = await fetch(PIPELINE_RUN_ENDPT(pipelineRunId), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        core.setFailed(`Failed to poll pipeline: ${response.statusText}`);
+      let responseData;
+      try {
+        responseData = await fetchRunStatus(pipelineRunId, token);
+      } catch (err) {
+        core.setFailed(err.message);
         return;
       }
-      const responseData = await response.json();
+
       const status = responseData.runStatus;
       const pipelineName = responseData.pipelineName;
 
