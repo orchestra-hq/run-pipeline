@@ -29,6 +29,10 @@ inputs:
   run_inputs:
     description: "A JSON-formatted string containing key-value pairs of pipeline run inputs."
     required: false
+  cancel_on_exit:
+    description: "Cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status, for example when the GitHub job is cancelled"
+    required: false
+    default: "true"
 outputs:
   status:
     description: "The final status of the pipeline run"
@@ -39,6 +43,7 @@ outputs:
 runs:
   using: "node24"
   main: "./src/index.js"
+  post: "./src/cancel.js"
 branding:
   icon: "play"
   color: "purple"

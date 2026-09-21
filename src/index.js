@@ -21,6 +21,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const isRetryablePollStatus = (status) =>
   RETRYABLE_POLL_STATUSES.has(status) || status >= 500;
 
+// Tells the `post` step (src/cancel.js) that the run reached a terminal status
+// and does not need cancelling.
+const markRunFinished = () => core.saveState("runFinished", "true");
+
 const parseJson = (input) => {
   if (!input?.trim()) {
     return;
@@ -132,6 +136,7 @@ async function main() {
       `Pipeline '${pipelineId}' started with run ID '${pipelineRunId}'`
     );
     core.info(`See '${LINEAGE_APP_URL(pipelineRunId)}' for details.`);
+    core.saveState("pipelineRunId", pipelineRunId);
     core.setOutput("pipeline_run_id", pipelineRunId);
     core.info(`Check pipeline run status...`);
 
@@ -152,11 +157,13 @@ async function main() {
       core.info(`Pipeline status: ${status}`);
 
       if (status === "FAILED") {
+        markRunFinished();
         core.setFailed(`Pipeline '${pipelineName}' failed`);
         return;
       }
 
       if (status === "CANCELLED") {
+        markRunFinished();
         core.setFailed(
           `Pipeline '${pipelineName}'cancelled in the underlying platform.`
         );
@@ -164,6 +171,7 @@ async function main() {
       }
 
       if (status === "SUCCEEDED") {
+        markRunFinished();
         core.info(`Pipeline '${pipelineName}' succeeded.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
@@ -171,6 +179,7 @@ async function main() {
       }
 
       if (status === "WARNING") {
+        markRunFinished();
         core.warning(`Pipeline '${pipelineName}' ended in warning state.`);
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
@@ -178,6 +187,7 @@ async function main() {
       }
 
       if (status === "SKIPPED") {
+        markRunFinished();
         core.warning(
           `Pipeline '${pipelineName}' run was skipped, likely because the pipeline's concurrency limit was reached.`
         );
