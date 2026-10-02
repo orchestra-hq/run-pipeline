@@ -46,6 +46,18 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) Whether to cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status. Default is true. See [Cancellation](#cancellation).
 
+### `wait_for_slot`
+
+(Optional) Set this to true to keep trying to start the pipeline when a run is skipped because the pipeline's concurrency limit is reached. Each attempt creates a new (skipped) run in Orchestra. Default is false, which ends the action with status SKIPPED.
+
+### `wait_for_slot_interval`
+
+(Optional) Seconds between start attempts when `wait_for_slot` is true. Default is 30 seconds.
+
+### `wait_for_slot_timeout`
+
+(Optional) Minutes to keep trying when `wait_for_slot` is true. After this, the action ends with status SKIPPED, as it would without `wait_for_slot`. Default is 60 minutes.
+
 ## Outputs
 
 ### `status`

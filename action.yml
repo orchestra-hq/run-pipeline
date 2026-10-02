@@ -33,6 +33,18 @@ inputs:
     description: "Cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status, for example when the GitHub job is cancelled"
     required: false
     default: "true"
+  wait_for_slot:
+    description: "If the run is skipped because the pipeline's concurrency limit is reached, keep trying to start it until a slot frees up"
+    required: false
+    default: "false"
+  wait_for_slot_interval:
+    description: "Seconds to wait between start attempts when wait_for_slot is true"
+    required: false
+    default: "30"
+  wait_for_slot_timeout:
+    description: "Minutes to keep trying when wait_for_slot is true, before ending as SKIPPED"
+    required: false
+    default: "60"
 outputs:
   status:
     description: "The final status of the pipeline run"

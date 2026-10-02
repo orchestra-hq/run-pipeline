@@ -16,7 +16,25 @@ const MAX_POLL_ATTEMPTS = 3;
 const MAX_POLL_BACKOFF_MS = 2 ** (MAX_POLL_ATTEMPTS - 2) * 1000;
 const RETRYABLE_POLL_STATUSES = new Set([408, 429]);
 
+// The start response only flags a concurrency skip in its message text. If the
+// wording changes, the action just ends as SKIPPED.
+const CONCURRENCY_SKIP_TEXT = "concurrency limit reached";
+
+const isConcurrencySkip = (message) =>
+  typeof message === "string" &&
+  message.toLowerCase().includes(CONCURRENCY_SKIP_TEXT);
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A NaN or zero here would retry the start in a tight loop, creating a skipped
+// run in Orchestra each time, so reject it up front.
+const getPositiveIntInput = (name, fallback) => {
+  const value = parseInt(core.getInput(name) || fallback);
+  if (!(value > 0)) {
+    throw new Error(`'${name}' must be a positive integer`);
+  }
+  return value;
+};
 
 const isRetryablePollStatus = (status) =>
   RETRYABLE_POLL_STATUSES.has(status) || status >= 500;
@@ -100,38 +118,82 @@ async function main() {
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"));
     const branchInput = core.getInput("branch");
+    const waitForSlot =
+      core.getInput("wait_for_slot").trim().toLowerCase() === "true";
+    // Only validated when used, so a stray value can't break runs that don't
+    // opt in.
+    const waitForSlotIntervalMs = waitForSlot
+      ? getPositiveIntInput("wait_for_slot_interval", "30") * 1000
+      : 0;
+    const waitForSlotTimeoutMs = waitForSlot
+      ? getPositiveIntInput("wait_for_slot_timeout", "60") * 60 * 1000
+      : 0;
 
-    core.info(`Starting pipeline '${pipelineId}'...`);
-
-    const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        branch: branchInput || github.context.ref.replace(/^refs\/heads\//, ""),
-        commit: branchInput ? null : github.context.sha,
-        environment,
-        ciRunId: github.context.runId.toString(),
-        retryFromFailed,
-        taskIds,
-        continueDownstreamRun,
-        runInputs,
-      }),
+    const startBody = JSON.stringify({
+      branch: branchInput || github.context.ref.replace(/^refs\/heads\//, ""),
+      commit: branchInput ? null : github.context.sha,
+      environment,
+      ciRunId: github.context.runId.toString(),
+      retryFromFailed,
+      taskIds,
+      continueDownstreamRun,
+      runInputs,
     });
+    const waitStartedAt = Date.now();
+    let pipelineRunId;
 
-    if (!response.ok) {
-      const errorMessage = await readErrorMessage(response);
+    while (true) {
+      core.info(`Starting pipeline '${pipelineId}'...`);
 
-      core.error(
-        `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${response.url}\nError: ${errorMessage}`
+      // Not retried on a network error: the start may have reached Orchestra,
+      // and a second attempt could run the pipeline twice.
+      const response = await fetch(START_PIPELINE_ENDPT(pipelineId), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: startBody,
+      });
+
+      if (!response.ok) {
+        const errorMessage = await readErrorMessage(response);
+
+        core.error(
+          `Failed to start pipeline: (HTTP ${response.status} ${response.statusText})\nURL: ${response.url}\nError: ${errorMessage}`
+        );
+        core.setFailed("Pipeline start failed");
+        return;
+      }
+      const responseData = await response.json();
+      pipelineRunId = responseData.pipelineRunId;
+
+      if (!waitForSlot || !isConcurrencySkip(responseData.message)) {
+        break;
+      }
+
+      // Out of time: fall through and poll the skipped run, which ends the
+      // action exactly as it would without wait_for_slot.
+      if (
+        Date.now() - waitStartedAt + waitForSlotIntervalMs >
+        waitForSlotTimeoutMs
+      ) {
+        core.warning(
+          `No free concurrency slot after waiting ${
+            waitForSlotTimeoutMs / 60000
+          } minutes.`
+        );
+        break;
+      }
+
+      core.info(
+        `Run '${pipelineRunId}' was skipped (${responseData.message}). Retrying in ${
+          waitForSlotIntervalMs / 1000
+        }s...`
       );
-      core.setFailed("Pipeline start failed");
-      return;
+      await sleep(waitForSlotIntervalMs);
     }
-    const responseData = await response.json();
-    const pipelineRunId = responseData.pipelineRunId;
+
     core.info(
       `Pipeline '${pipelineId}' started with run ID '${pipelineRunId}'`
     );
