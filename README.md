@@ -50,7 +50,7 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 ### `status`
 
-The final pipeline run status. One of SUCCEEDED, WARNING, FAILED, CANCELLED or SKIPPED (the pipeline run was skipped, e.g. because the pipeline's concurrency limit was reached).
+The final pipeline run status. One of SUCCEEDED, WARNING, FAILED, CANCELLED or SKIPPED. A run can be skipped because the pipeline's concurrency limit was reached, it was replaced by a newer queued run, it waited in the queue for more than 24 hours, or the pipeline was paused. The action's warning gives the reason for that run.
 
 ### `pipeline_name`
 
@@ -59,6 +59,13 @@ The name of the pipeline.
 ### `pipeline_run_id`
 
 The ID of the pipeline run.
+
+## Queued runs
+
+If the pipeline is at its concurrency limit, Orchestra may queue the run until a slot
+frees up. A `QUEUED` run is in progress: the action logs why it is waiting and keeps
+polling until the run reaches a final status. Time spent queued counts against the
+GitHub job's `timeout-minutes`, so allow for it when setting the timeout.
 
 ## Cancellation
 

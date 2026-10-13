@@ -140,6 +140,7 @@ async function main() {
     core.setOutput("pipeline_run_id", pipelineRunId);
     core.info(`Check pipeline run status...`);
 
+    let lastQueuedMessage;
     while (true) {
       await sleep(parseInt(pollInterval) * 1000);
 
@@ -155,6 +156,15 @@ async function main() {
       const pipelineName = responseData.pipelineName;
 
       core.info(`Pipeline status: ${status}`);
+
+      if (status === "QUEUED") {
+        const queuedMessage =
+          responseData.message ?? "waiting for a free concurrency slot";
+        if (queuedMessage !== lastQueuedMessage) {
+          lastQueuedMessage = queuedMessage;
+          core.info(`Pipeline '${pipelineName}' is queued: ${queuedMessage}`);
+        }
+      }
 
       if (status === "FAILED") {
         markRunFinished();
@@ -189,7 +199,9 @@ async function main() {
       if (status === "SKIPPED") {
         markRunFinished();
         core.warning(
-          `Pipeline '${pipelineName}' run was skipped, likely because the pipeline's concurrency limit was reached.`
+          `Pipeline '${pipelineName}' run was skipped: ${
+            responseData.message ?? "no reason given"
+          }`
         );
         core.setOutput("status", status);
         core.setOutput("pipeline_name", pipelineName);
