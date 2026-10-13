@@ -159,7 +159,7 @@ async function main() {
 
       if (status === "QUEUED") {
         const queuedMessage =
-          responseData.message ?? "waiting for a free concurrency slot";
+          responseData.message || "waiting for a free concurrency slot";
         if (queuedMessage !== lastQueuedMessage) {
           lastQueuedMessage = queuedMessage;
           core.info(`Pipeline '${pipelineName}' is queued: ${queuedMessage}`);
@@ -200,7 +200,7 @@ async function main() {
         markRunFinished();
         core.warning(
           `Pipeline '${pipelineName}' run was skipped: ${
-            responseData.message ?? "no reason given"
+            responseData.message || "no reason given"
           }`
         );
         core.setOutput("status", status);

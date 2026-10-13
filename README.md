@@ -72,7 +72,7 @@ GitHub job's `timeout-minutes`, so allow for it when setting the timeout.
 By default, if the action stops watching a pipeline run before that run reaches a
 terminal status, it asks Orchestra to cancel the run. This stops a cancelled GitHub
 job from leaving an orphaned pipeline run behind, which would otherwise keep
-consuming a pipeline concurrency slot and cause later runs to be `SKIPPED`.
+consuming a pipeline concurrency slot and cause later runs to be `QUEUED` or `SKIPPED`.
 
 This happens when:
 
