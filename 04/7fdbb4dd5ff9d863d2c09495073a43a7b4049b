@@ -1,0 +1,21 @@
+README.md
+  s_c5e1ef776927d7::t_d33ee513a82f97 75
+src/index.js
+  s_c5e1ef776927d7::t_035b00b2b99de4 162,203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "047fdbb4dd5ff9d863d2c09495073a43a7b4049b",
+  "prompts": {},
+  "sessions": {
+    "s_c5e1ef776927d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f4ba644c-0c69-4e35-96ad-6f615c3e2ee3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Will Davies <42768478+willdavies0@users.noreply.github.com>"
+    }
+  }
+}
