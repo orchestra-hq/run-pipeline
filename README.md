@@ -42,6 +42,18 @@ If the pipeline is backed by Orchestra, the latest published version will run. I
 
 (Optional) A JSON-formatted string containing key-value pairs of pipeline run inputs. These values override any default inputs defined in the pipeline and are required if the pipeline has required inputs with no defaults.
 
+### `input_set`
+
+(Optional) The name of a pipeline input set to run with. The set's values are used as the run inputs. Any key you also pass in `run_inputs` takes precedence over the set's value for that key. If the pipeline version has no input set with this name, Orchestra rejects the request, no run is created and the step fails with Orchestra's error message.
+
+```yaml
+uses: orchestra-hq/run-pipeline@v1
+with:
+  api_key: ${{ secrets.ORCHESTRA_API_KEY }}
+  pipeline_id: "your-pipeline-id"
+  input_set: "prod"
+```
+
 ### `cancel_on_exit`
 
 (Optional) Whether to cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status. Default is true. See [Cancellation](#cancellation).
