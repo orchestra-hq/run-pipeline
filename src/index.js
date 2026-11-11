@@ -99,6 +99,7 @@ async function main() {
       ? core.getInput("task_ids").split(",")
       : null;
     const runInputs = parseJson(core.getInput("run_inputs"));
+    const inputSet = core.getInput("input_set");
     const branchInput = core.getInput("branch");
 
     core.info(`Starting pipeline '${pipelineId}'...`);
@@ -118,6 +119,7 @@ async function main() {
         taskIds,
         continueDownstreamRun,
         runInputs,
+        ...(inputSet && { inputSet }),
       }),
     });
 

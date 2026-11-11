@@ -29,6 +29,9 @@ inputs:
   run_inputs:
     description: "A JSON-formatted string containing key-value pairs of pipeline run inputs."
     required: false
+  input_set:
+    description: "Name of a pipeline input set whose values are used as run inputs. Values in run_inputs take precedence over the set"
+    required: false
   cancel_on_exit:
     description: "Cancel the Orchestra pipeline run if the action stops watching it before it reaches a terminal status, for example when the GitHub job is cancelled"
     required: false
